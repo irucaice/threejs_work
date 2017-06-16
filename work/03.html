@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <title>Three.js Practice</title>
+</head>
+<body>
+<div id="stage"></div>
+<script src="../js/three.min.js"></script>
+<script src="../js/OrbitControls.js"></script>
+<script>
+    (function() {
+        'use strict';
+
+        var scene;
+        var box;
+        var light;
+        var ambient;
+        var camera;
+        var gridHelper;
+        var axisHelper;
+        var lightHelper;
+        var renderer;
+        var width = 900;
+        var height = 600;
+        var controls;
+
+        // scene ステージ
+        scene = new THREE.Scene();
+
+        // box ------------------
+        box = new THREE.Mesh(
+            new THREE.BoxGeometry(60, 20, 40),  //箱
+            new THREE.MeshLambertMaterial({ color: 0x77bbff })  //マテリアル
+        );
+        box.position.set(0, 0, 0);
+        scene.add(box);
+
+        // light
+        light = new THREE.DirectionalLight(0xffffff, 1);  //平行光(色, 光の強さ)
+        light.position.set(0, 100, 30);
+        scene.add(light);
+
+        ambient = new THREE.AmbientLight(0x404040, 1);
+        //AmbientLight は全方向から当たるので、位置は必要ありません
+        scene.add(ambient);
+
+        // camera
+        camera = new THREE.PerspectiveCamera(45, width / height, 1, 1000);  //カメラ種類(画角, 縦横比, どこから, どこまでクリッピング)
+        camera.position.set(200,100,300);  //カメラの座標
+        camera.lookAt(scene.position);  //向き scene.positionは、つまり(0,0,0)
+
+        // helper
+        //GridHelper：平面にグリッドを設置してくれて、わかりやすくする。
+        gridHelper = new THREE.GridHelper(400, 10);  //×(全体のサイズと, 1 つのグリッドの大きさ)→○(全体のサイズと, 縦のグリッドの数)
+        // グリッド色設定
+        gridHelper.material.color = new THREE.Color(0x0000ff);
+        scene.add(gridHelper);
+
+        // AxisHelper：x y z 軸を表示してくれる。赤 x 軸、緑 y 軸、青 z 軸。今この立方体は 0, 0, 0 の位置。
+        axisHelper = new THREE.AxisHelper(1000); //軸の長さ
+        scene.add(axisHelper);
+
+        // DirectionalLight に関するヘルパー(ライトに関するヘルパーはいくつか種類がある)
+        lightHelper = new THREE.DirectionalLightHelper(light, 20);  //(どのライト, サイズ)
+        scene.add(lightHelper);
+
+        // OrbitControls
+        controls = new THREE.OrbitControls(camera);
+
+        // renderer
+        renderer = new THREE.WebGLRenderer({ antialias: true });  //レンダラ種類({オプション})
+        renderer.setSize(width, height);  //レンダラサイズ
+        renderer.setClearColor(0xefefef);  //描画がクリアされるときの色の設定。背景色。
+        renderer.setPixelRatio(window.devicePixelRatio);  //Retina のような解像度が高いディスプレイ向けの設定
+
+        //id=stage div要素へ、くっつけたい
+        document.getElementById('stage').appendChild(renderer.domElement);
+
+        //実際のレンダリング。1 度だけレンダリングがされてるが、再帰的にこの描画処理を呼び出すことによって、アニメーションさせることができる。
+//            renderer.render(scene, camera);
+
+        function render() {
+            requestAnimationFrame(render);  //ブラウザの描画更新単位で処理を呼び出してくれたり、タブがアクティブでないときには動作を抑制してくれたりする
+            box.rotation.z += 0.01;
+            renderer.render(scene, camera);
+        }
+        render();
+
+    })();
+</script>
+</body>
+</html>
