@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <title>3D text | Three.js Practice</title>
+</head>
+<body>
+<div id="stage"></div>
+<script src="../js/three.min.js"></script>
+<script src="../js/OrbitControls.js"></script>
+<script>
+    (function() {
+        'use strict';
+
+        var scene;
+        var camera;
+        var renderer;
+        var width = 900;
+        var height = 600;
+        var controls;
+        var loader;
+		var text;
+
+        // scene ステージ
+        scene = new THREE.Scene();
+
+        // camera
+        camera = new THREE.PerspectiveCamera(45, width / height, 1, 1000);  //カメラ種類(画角, 縦横比, どこから, どこまでクリッピング)
+        camera.position.set(200,100,300);  //カメラの座標
+        camera.lookAt(scene.position);  //向き scene.positionは、つまり(0,0,0)
+
+        // OrbitControls
+        controls = new THREE.OrbitControls(camera);
+        controls.autoRotate = true;
+
+        // renderer
+        renderer = new THREE.WebGLRenderer({ antialias: true });  //レンダラ種類({オプション})
+        renderer.setSize(width, height);  //レンダラサイズ
+        renderer.setClearColor(0xefefef);  //描画がクリアされるときの色の設定。背景色。
+        renderer.setPixelRatio(window.devicePixelRatio);  //Retina のような解像度が高いディスプレイ向けの設定
+		//id=stage div要素へ、くっつけたい
+        document.getElementById('stage').appendChild(renderer.domElement);
+		
+		// FontLoader
+    	loader = new THREE.FontLoader();
+		loader.load('../font/helvetiker_regular.typeface.json', function(font){
+						createText(font);  //textureを張ったboxを作る
+						render();
+		});
+		function createText(font){
+			text = new THREE.Mesh(
+				new THREE.TextGeometry('Three.js', {
+					font: font,
+					size: 24,
+					height: 4
+				}),
+				new THREE.MeshBasicMaterial({ color: 0xf39800, side: THREE.DoubleSide })  //マテリアル
+			);
+			text.position.set(-40, 0, 0);
+			scene.add(text);
+		}
+
+        function render() {
+            requestAnimationFrame(render);  //ブラウザの描画更新単位で処理を呼び出してくれたり、タブがアクティブでないときには動作を抑制してくれたりする
+            controls.update();
+            renderer.render(scene, camera);
+        }
+//        render();
+
+    })();
+</script>
+</body>
+</html>

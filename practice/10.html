@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <title>Particles | Three.js Practice</title>
+</head>
+<body>
+<div id="stage"></div>
+<script src="../js/three.min.js"></script>
+<script src="../js/OrbitControls.js"></script>
+<script>
+    (function() {
+        'use strict';
+
+        var scene;
+        var camera;
+        var renderer;
+        var width = 900;
+        var height = 600;
+        var controls;
+        var particles;
+        var loader;
+
+        // scene ステージ
+        scene = new THREE.Scene();
+
+        // camera
+        camera = new THREE.PerspectiveCamera(45, width / height, 1, 1000);  //カメラ種類(画角, 縦横比, どこから, どこまでクリッピング)
+        camera.position.set(100,100,100);  //カメラの座標
+        camera.lookAt(scene.position);  //向き scene.positionは、つまり(0,0,0)
+
+        // OrbitControls
+        controls = new THREE.OrbitControls(camera);
+
+        // renderer
+        renderer = new THREE.WebGLRenderer({ antialias: true });  //レンダラ種類({オプション})
+        renderer.setSize(width, height);  //レンダラサイズ
+        renderer.setClearColor(0x000000);  //描画がクリアされるときの色の設定。背景色。
+        renderer.setPixelRatio(window.devicePixelRatio);  //Retina のような解像度が高いディスプレイ向けの設定
+		//id=stage div要素へ、くっつけたい
+        document.getElementById('stage').appendChild(renderer.domElement);
+		
+		// particles
+		// mesh: Points
+		// - geometry: 図形の頂点
+		// - material: PointsMaterial
+		
+		// textureを読み込むようにパーティクルを作っていく
+    	loader = new THREE.TextureLoader();
+		loader.load('../img/star.png', function(texture){
+						createParticles(texture);  //textureを張ったboxを作る
+						render();
+		});
+		function createParticles(texture){
+			var pGeometry;
+			var pMaterial;
+			var pNum = 200;
+			var i;
+
+			// pGeometry
+			pGeometry = new THREE.Geometry(); //この形状の頂点の一つ一つが particles の粒になっていく。
+			for(i=0 ; i<pNum ; i++){
+				//vertices(頂点を管理するプロパティ)に対して三次元ベクトルをプッシュ
+				pGeometry.vertices.push(
+					new THREE.Vector3(
+						Math.random() * 200 - 100,
+						Math.random() * 200 - 100,
+						Math.random() * 200 - 100
+					)
+				);
+			}
+			
+			// pMaterial
+			pMaterial = new THREE.PointsMaterial({
+				map: texture,
+				size: 32,
+				blending: THREE.AdditiveBlending,  //加算。色が重なった時に明るくして星らしく表現。
+				transparent: true,  //読み込んだ画像の透過部分をtrue
+				depthTest: false  //物体が重なった時に後ろにある物体を描写するかしないか判定するためのテスト。
+				//今回はどちらにしろ後ろにあるものを描画していくので、この判定テストを false
+			});
+
+			particles = new THREE.Points(pGeometry, pMaterial);
+			scene.add(particles);
+		}
+			
+        function render() {
+            requestAnimationFrame(render);  //ブラウザの描画更新単位で処理を呼び出してくれたり、タブがアクティブでないときには動作を抑制してくれたりする
+            
+			particles.rotation.y += 0.001;
+			controls.update();
+            renderer.render(scene, camera);
+        }
+//        render();
+
+    })();
+</script>
+</body>
+</html>
